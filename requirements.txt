@@ -1,0 +1,5 @@
+requests
+beautifulsoup4
+pdfkit
+xhtml2pdf
+bs4
