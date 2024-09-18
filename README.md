@@ -8,12 +8,17 @@ This script allows you to generate a PDF document by scraping content from a web
 
 ## Features
 
-- Scrape multiple web pages starting from a table of contents page.
-- Specify the HTML element containing the links to content pages.
-- Define the HTML element class that contains the main content to extract.
-- Generate a consolidated PDF file with the scraped content.
-- Customizable through command-line arguments.
-- Includes logging to monitor the scraping process.
+- **Multiple Navigation Methods:**
+    - **Index-Based Navigation:** Start from a table of contents page and follow links within a specified HTML element.
+    - **Next Link Navigation:** Navigate through pages by following a "next" link until no further links are found.
+- **Content Extraction:**
+    - Specify the HTML element class that contains the main content to extract.
+- **PDF Generation:**
+    - Generate a consolidated PDF file with the scraped content.
+- **Customization:**
+    - Customizable through command-line arguments.
+- **Logging:**
+    - Includes logging to monitor the scraping process.
 
 ## Prerequisites
 
@@ -74,29 +79,52 @@ Run the script using the command line with the required arguments.
 
 ### Command-Line Arguments
 
-- `--url`: **(Required)** The URL of the table of contents page.
-- `--index_id`: **(Required)** The `id` attribute of the HTML element containing links to the content pages.
+- `--url`: **(Required)** The URL of the start page.
 - `--content_class`: **(Required)** The `class` attribute of the HTML element containing the content to include in the PDF.
 - `--filename`: **(Required)** The name of the output PDF file.
 - `--log-level`: *(Optional)* Set the logging level (`DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`). Default is `INFO`.
+- **Navigation Options (Choose One):**
+    - `--index_id`: The `id` attribute of the HTML element containing links to content pages.
+    - `--next_page_class`: The `class` attribute of the "next" link to navigate through pages.
 
-### Example
+### Important Note
 
-Generate a PDF from the SmartThings developer documentation:
+- You must provide either `--index_id` or `--next_page_class`, but not both.
+- These arguments are **mutually exclusive**, and the script will exit with an error if neither is provided.
+
+### Examples
+
+#### **Example 1: Index-Based Navigation**
+
+Generate a PDF by following links from a table of contents page:
 
 ```bash
 python download_as_pdf.py \
-    --url "https://developer.smartthings.com/docs/edge-device-drivers/reference/index.html" \
-    --index_id "edge-device-driver-reference" \
-    --content_class "rst-content" \
-    --filename "smartthings_documentation.pdf" \
-    --log-level INFO
+--url "https://example.com/docs/index.html" \
+--index_id "docs-links" \
+--content_class "main-content" \
+--filename "example_docs.pdf" \
+--log-level INFO
+```
+
+#### **Example 2: Next Link Navigation**
+
+Generate a PDF by navigating through pages using a "next" link:
+
+```bash
+python download_as_pdf.py \
+--url "https://example.com/articles/part1.html" \
+--next_page_class "next-button" \
+--content_class "article-content" \
+--filename "articles_series.pdf" \
+--log-level INFO
 ```
 
 ### Explanation of Parameters
 
-- `--url`: Starting URL containing the table of contents.
-- `--index_id`: The `id` of the HTML element that contains the links to other pages.
+- `--url`: Starting URL for scraping.
+- `--index_id`: The `id` of the HTML element that contains links to other pages.
+- `--next_page_class`: The `class` of the "next" link to navigate through pages.
 - `--content_class`: The `class` of the HTML elements that contain the main content to extract.
 - `--filename`: The desired name for the output PDF file.
 - `--log-level`: Logging verbosity level.
@@ -121,18 +149,31 @@ python download_as_pdf.py \
 
 3. **Run the Script**
 
-   Use the command-line arguments to specify your parameters:
+   Use the command-line arguments to specify your parameters.
 
-   ```bash
-   python download_as_pdf.py \
-       --url "YOUR_URL" \
-       --index_id "YOUR_INDEX_ID" \
-       --content_class "YOUR_CONTENT_CLASS" \
-       --filename "YOUR_FILENAME.pdf" \
-       --log-level INFO
-   ```
+    - **For Index-Based Navigation:**
 
-   Replace `YOUR_URL`, `YOUR_INDEX_ID`, `YOUR_CONTENT_CLASS`, and `YOUR_FILENAME.pdf` with your specific values.
+      ```bash
+      python download_as_pdf.py \
+      --url "YOUR_URL" \
+      --index_id "YOUR_INDEX_ID" \
+      --content_class "YOUR_CONTENT_CLASS" \
+      --filename "YOUR_FILENAME.pdf" \
+      --log-level INFO
+      ```
+
+    - **For Next Link Navigation:**
+
+      ```bash
+      python download_as_pdf.py \
+      --url "YOUR_START_URL" \
+      --next_page_class "YOUR_NEXT_PAGE_CLASS" \
+      --content_class "YOUR_CONTENT_CLASS" \
+      --filename "YOUR_FILENAME.pdf" \
+      --log-level INFO
+      ```
+
+   Replace placeholders with your specific values.
 
 4. **Wait for Completion**
 
@@ -150,7 +191,7 @@ python download_as_pdf.py \
 
 - **Verify HTML Structure**
 
-  Ensure the `index_id` and `content_class` match the actual `id` and `class` attributes in the website's HTML.
+  Ensure the `index_id`, `next_page_class`, and `content_class` match the actual `id` and `class` attributes in the website's HTML.
 
 - **Respect Website Policies**
 
@@ -159,26 +200,6 @@ python download_as_pdf.py \
 - **Virtual Environment**
 
   Using a virtual environment can prevent package conflicts and maintain project-specific dependencies.
-
-## Example with a Different Website
-
-Suppose you have a documentation site at `https://example.com/docs` with the following structure:
-
-- **Table of Contents URL**: `https://example.com/docs/index.html`
-- **Links Container ID**: `docs-links`
-- **Content Class**: `main-content`
-- **Output Filename**: `example_docs.pdf`
-
-Run the script as follows:
-
-```bash
-python download_as_pdf.py \
-    --url "https://example.com/docs/index.html" \
-    --index_id "docs-links" \
-    --content_class "main-content" \
-    --filename "example_docs.pdf" \
-    --log-level INFO
-```
 
 ## Limitations
 
@@ -189,6 +210,10 @@ python download_as_pdf.py \
 - **CSS Support**
 
   The `xhtml2pdf` library supports a subset of CSS. Complex styles may not render as expected in the PDF.
+
+- **Percentage Values in Styles**
+
+  Due to limitations of `xhtml2pdf`, the script removes percentage values from HTML attributes and inline styles to prevent errors during PDF generation.
 
 ## Dependencies
 
@@ -211,7 +236,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 **Rafael Borja**
 
 - **GitHub**: [https://github.com/rafaelborja/](https://github.com/rafaelborja/)
-- 
+
 Feel free to reach out for any questions or collaborations.
 
 ## Acknowledgments
