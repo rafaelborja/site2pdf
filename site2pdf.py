@@ -12,6 +12,7 @@ import os
 from urllib.parse import urljoin, urlparse
 import logging
 import argparse
+import sys
 from xhtml2pdf import pisa
 
 def main():
@@ -218,7 +219,7 @@ def main():
         soup = fetch_and_parse(args.url)
     except Exception as e:
         logging.error(f'Failed to fetch start URL {args.url}: {e}')
-        exit(1)
+        sys.exit(1)
 
     # Mark the start URL as visited to avoid reprocessing it
     visited_urls.add(args.url)
@@ -251,16 +252,16 @@ def main():
         container = soup.find(id=args.index_id)
         if not container:
             logging.error(f"No element found with id '{args.index_id}' on {args.url}")
-            exit(1)
+            sys.exit(1)
 
         process_links(container, args.url)
     else:
         logging.error('Either --index_id or --next_page_class must be provided.')
-        exit(1)
+        sys.exit(1)
 
     if not html_contents:
         logging.error('No content was collected. Exiting.')
-        exit(1)
+        sys.exit(1)
 
     # Combine all HTML content into a single HTML string
     logging.info('Combining content into a single HTML document')
