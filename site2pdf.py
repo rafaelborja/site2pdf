@@ -206,7 +206,9 @@ def main():
                 if new_styles:
                     tag['style'] = '; '.join(new_styles)
                     if tag['style'] != original_style:
-                        logging.debug(f'Updated style from "{original_style}" to "{tag['style']}" in tag {tag}')
+                        logging.debug(
+                            f"Updated style from '{original_style}' to '{tag['style']}' in tag {tag}"
+                        )
                 else:
                     del tag['style']
 
@@ -217,6 +219,9 @@ def main():
     except Exception as e:
         logging.error(f'Failed to fetch start URL {args.url}: {e}')
         exit(1)
+
+    # Mark the start URL as visited to avoid reprocessing it
+    visited_urls.add(args.url)
 
     # Determine which processing method to use
     if args.next_page_class:
